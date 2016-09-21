@@ -144,6 +144,7 @@ namespace VesselMover
 		{
 			if(moving)
 			{
+                movingVessel.IgnoreGForces(120);
 				UpdateMove();
 
 				if(hasRotated && Time.time-timeBoundsUpdated > 0.2f)
@@ -336,6 +337,7 @@ namespace VesselMover
 			movingVessel.SetWorldVelocity(Vector3d.zero);
 			movingVessel.angularVelocity = Vector3.zero;
 			movingVessel.angularMomentum = Vector3.zero;
+            movingVessel.IgnoreGForces(120);
 
 
 		}
@@ -364,6 +366,8 @@ namespace VesselMover
 
 		public void StartMove(Vessel v, bool forceReleaseClamps)
 		{
+            v.IgnoreGForces(120);
+
 			if(!v)
 			{
 				Debug.Log("Vessel mover tried to move a null vessel.");
@@ -392,7 +396,7 @@ namespace VesselMover
 				ShowModeMessage();
 
 				movingVessel = v;
-				isMovingVessel = true;
+				isMovingVessel = true;                      
 
 				up = (v.transform.position-v.mainBody.transform.position).normalized;
 				startingUp = up;
@@ -444,7 +448,8 @@ namespace VesselMover
 
 			while(v && !v.LandedOrSplashed)
 			{
-				up = (v.transform.position-FlightGlobals.currentMainBody.transform.position).normalized;
+                v.IgnoreGForces(120);
+                up = (v.transform.position-FlightGlobals.currentMainBody.transform.position).normalized;
 				float placeSpeed = Mathf.Clamp(((altitude-bottomLength)*2), 0.1f, maxPlacementSpeed);
 				if(placeSpeed > 3)
 				{

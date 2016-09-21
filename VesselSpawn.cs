@@ -220,7 +220,7 @@ namespace VesselMover
 			{
 				return Vector3d.zero;
 			}
-
+            
 			double lat = body.GetLatitude(worldPosition);
 			double longi = body.GetLongitude(worldPosition);
 			double alt = body.GetAltitude(worldPosition);
@@ -280,7 +280,8 @@ namespace VesselMover
 			newData.craftURL = craftURL;
 			newData.latitude = gpsCoords.x;
 			newData.longitude = gpsCoords.y;
-			newData.altitude = gpsCoords.z+35;
+			//newData.altitude = gpsCoords.z+35;
+            newData.altitude = 35;
 
 			newData.body = FlightGlobals.currentMainBody;
 			newData.heading = heading;
