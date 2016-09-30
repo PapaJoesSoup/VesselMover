@@ -21,7 +21,6 @@ namespace VesselMover
 	{
 		public static VesselMove instance;
 
-
 		public enum MoveModes{Normal = 0, Slow = 1, Fine = 2, Ludicrous = 3}
 		MoveModes moveMode = MoveModes.Normal;
 
@@ -29,7 +28,6 @@ namespace VesselMover
 		List<Vessel> placingVessels = new List<Vessel>();
 		//float hOffset = 0;
 		public float moveHeight = 0;
-
 
 		float[] hoverHeights = new float[]{35, 15, 5, 3000};
 		float hoverHeight
@@ -71,21 +69,13 @@ namespace VesselMover
 		public Vessel movingVessel;
 		Quaternion startRotation;
 		Quaternion currRotation;
-
-		float currMoveSpeed = 0;
+        float currMoveSpeed = 0;
 		Vector3 currMoveVelocity;
-
-
 		VesselBounds vBounds;
-
 		LineRenderer debugLr;
-
-	
-		Vector3 up;
+        Vector3 up;
 		Vector3 startingUp;
-
 		float maxPlacementSpeed = 1050;
-
 		bool hasRotated = false;
 		float timeBoundsUpdated = 0;
 
@@ -160,7 +150,8 @@ namespace VesselMover
 			vBounds.UpdateBounds();
 			timeBoundsUpdated = Time.time;
 		}
-
+        
+        float hoverAdjust = 0f;
 		void UpdateMove()
 		{
 			if(!movingVessel)
@@ -170,9 +161,10 @@ namespace VesselMover
 			}
             movingVessel.IgnoreGForces(240);
 
-			moveHeight = Mathf.Lerp(moveHeight, vBounds.bottomLength + hoverHeight, 10*Time.fixedDeltaTime);
-
-			movingVessel.ActionGroups.SetGroup(KSPActionGroup.RCS, false);
+            
+			moveHeight = Mathf.Lerp(moveHeight, vBounds.bottomLength + hoverHeight + hoverAdjust, 10*Time.fixedDeltaTime);
+            
+            movingVessel.ActionGroups.SetGroup(KSPActionGroup.RCS, false);
 
 			up = (movingVessel.transform.position-FlightGlobals.currentMainBody.transform.position).normalized;
 
@@ -191,9 +183,20 @@ namespace VesselMover
 			}
 
 			Vector3 right = Vector3.Cross(up, forward);
-
-			Vector3 offsetDirection = Vector3.zero;
+            Vector3 offsetDirection = Vector3.zero;
 			bool inputting = false;
+
+            if (GameSettings.THROTTLE_UP.GetKey())
+            {
+                hoverAdjust += (10f * Time.fixedDeltaTime);
+                inputting = true;
+            }
+
+            if (GameSettings.THROTTLE_DOWN.GetKey())
+            {
+                hoverAdjust += (-10f * Time.fixedDeltaTime);
+                inputting = true;
+            }
 
 			if(GameSettings.PITCH_DOWN.GetKey())
 			{
@@ -337,7 +340,7 @@ namespace VesselMover
 
 			movingVessel.SetWorldVelocity(Vector3d.zero);
 			movingVessel.angularVelocity = Vector3.zero;
-			movingVessel.angularMomentum = Vector3.zero;                     
+			movingVessel.angularMomentum = Vector3.zero;                 
 		}
 
 		void LateUpdate()
@@ -401,8 +404,7 @@ namespace VesselMover
 
 				vBounds = new VesselBounds(movingVessel);
 				moving = true;
-				moveHeight = vBounds.bottomLength+0.5f;
-				
+				moveHeight = vBounds.bottomLength+0.5f;				
 				
 				startRotation = movingVessel.transform.rotation;
 				currRotation = startRotation;
@@ -410,8 +412,6 @@ namespace VesselMover
 				debugLr.enabled = true;
 			}
 		}
-
-
 
 		public void EndMove()
 		{
@@ -484,7 +484,6 @@ namespace VesselMover
 			//debugLr.SetPosition(circleRes+3, vBounds.bottomPoint);
 		}
 
-
 		Vector3 GetBoundPoint(int index, int totalPoints, float radiusFactor)
 		{
 			float angleIncrement = 360/(float)totalPoints;
@@ -551,10 +550,10 @@ namespace VesselMover
 			case MoveModes.Slow:
 				debugLr.material.SetColor("_EmissiveColor", XKCDColors.Orange);
 				break;
-        case MoveModes.Fine:
-          debugLr.material.SetColor("_EmissiveColor", XKCDColors.BrightRed);
-          break;
-        case MoveModes.Ludicrous:
+            case MoveModes.Fine:
+                debugLr.material.SetColor("_EmissiveColor", XKCDColors.BrightRed);
+                break;
+            case MoveModes.Ludicrous:
 				debugLr.material.SetColor("_EmissiveColor", XKCDColors.PurpleishBlue);
 				break;
 			}
