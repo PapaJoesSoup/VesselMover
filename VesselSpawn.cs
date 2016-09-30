@@ -107,8 +107,8 @@ namespace VesselMover
 			float height = Screen.height * 0.7f;
 			yield return null;
 
-      //craftBrowser = new CraftBrowserDialog(new Rect((Screen.width - width) / 2, (Screen.height - height) / 2, width, height), EditorFacility.SPH, HighLogic.CurrentGame.Title.Split(new string[] { " (" }, StringSplitOptions.None)[0], "Spawn Vessel", OnSelected, OnCancelled, HighLogic.Skin, Texture2D.whiteTexture, false, false);
-      craftBrowser = CraftBrowserDialog.Spawn(EditorFacility.SPH, HighLogic.CurrentGame.Title.Split(new string[] { " (" }, StringSplitOptions.None)[0], OnSelected, OnCancelled, false);
+            //craftBrowser = new CraftBrowserDialog(new Rect((Screen.width - width) / 2, (Screen.height - height) / 2, width, height), EditorFacility.SPH, HighLogic.CurrentGame.Title.Split(new string[] { " (" }, StringSplitOptions.None)[0], "Spawn Vessel", OnSelected, OnCancelled, HighLogic.Skin, Texture2D.whiteTexture, false, false);
+            craftBrowser = CraftBrowserDialog.Spawn(EditorFacility.SPH, HighLogic.CurrentGame.Title.Split(new string[] { " (" }, StringSplitOptions.None)[0], OnSelected, OnCancelled, false);
 		}
 
 		void OnSelected(string fullPath, CraftBrowserDialog.LoadType loadType)
@@ -220,7 +220,7 @@ namespace VesselMover
 			{
 				return Vector3d.zero;
 			}
-
+            
 			double lat = body.GetLatitude(worldPosition);
 			double longi = body.GetLongitude(worldPosition);
 			double alt = body.GetAltitude(worldPosition);
@@ -280,7 +280,8 @@ namespace VesselMover
 			newData.craftURL = craftURL;
 			newData.latitude = gpsCoords.x;
 			newData.longitude = gpsCoords.y;
-			newData.altitude = gpsCoords.z+35;
+			//newData.altitude = gpsCoords.z+35;            
+            newData.altitude = gpsCoords.z = 35;            
 
 			newData.body = FlightGlobals.currentMainBody;
 			newData.heading = heading;
@@ -304,12 +305,13 @@ namespace VesselMover
 			if (!vesselData.orbiting)
 			{
 				landed = true;
-				if (vesselData.altitude == null)
+                if (vesselData.altitude == null || vesselData.altitude < 0)
 				{
-					vesselData.altitude = 0;//LocationUtil.TerrainHeight(vesselData.latitude, vesselData.longitude, vesselData.body);
+                    vesselData.altitude = 35; //LocationUtil.TerrainHeight(vesselData.latitude, vesselData.longitude, vesselData.body);
 				}
 
-				Vector3d pos = vesselData.body.GetWorldSurfacePosition(vesselData.latitude, vesselData.longitude, vesselData.altitude.Value);
+				//Vector3d pos = vesselData.body.GetWorldSurfacePosition(vesselData.latitude, vesselData.longitude, vesselData.altitude.Value);
+                 Vector3d pos = vesselData.body.GetRelSurfacePosition(vesselData.latitude, vesselData.longitude, vesselData.altitude.Value);
 
 				vesselData.orbit = new Orbit(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, vesselData.body);
 				vesselData.orbit.UpdateFromStateVectors(pos, vesselData.body.getRFrmVel(pos), vesselData.body, Planetarium.GetUniversalTime());
@@ -603,21 +605,18 @@ namespace VesselMover
 			}
 
 			// Add vessel to the game
-			ProtoVessel protoVessel = HighLogic.CurrentGame.AddVessel(protoVesselNode);
-			//protoVessel.vesselRef.transform.rotation = protoVessel.rotation;
-
+            ProtoVessel protoVessel = HighLogic.CurrentGame.AddVessel(protoVesselNode);
+			//protoVessel.vesselRef.transform.rotation = protoVessel.rotation;           
 
 			// Store the id for later use
 			vesselData.id = protoVessel.vesselRef.id;
 
 			//protoVessel.vesselRef.currentStage = 0;
-
+            
 			StartCoroutine(PlaceSpawnedVessel(protoVessel.vesselRef, !hasClamp));
 
 			// Associate it so that it can be used in contract parameters
 			//ContractVesselTracker.Instance.AssociateVessel(vesselData.name, protoVessel.vesselRef);
-
-
 
 			//destroy prefabs
 			foreach(Part p in FindObjectsOfType<Part>())
@@ -633,11 +632,14 @@ namespace VesselMover
 		{
 			loadingCraft = true;
 			v.isPersistent = true;
-			while(v.packed)
+
+            while(v.packed)
 			{
 				yield return null;
 			}
-			v.SetWorldVelocity(Vector3d.zero);
+            
+            v.IgnoreGForces(240);
+            v.SetWorldVelocity(Vector3d.zero);  
 
 			yield return null;
 			FlightGlobals.ForceSetActiveVessel(v);
@@ -652,7 +654,8 @@ namespace VesselMover
 			if(moveVessel)
 			{
 				VesselMove.instance.StartMove(v, false);
-				VesselMove.instance.moveHeight = 35;
+                v.IgnoreGForces(240);
+                VesselMove.instance.moveHeight = 35;
 				yield return null;
 				if(VesselMove.instance.movingVessel == v)
 				{

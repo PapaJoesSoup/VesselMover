@@ -1,3 +1,9 @@
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
