@@ -54,6 +54,9 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="MoveLaunch\MoveLaunch.cs" />
+    <Compile Include="MoveLaunch\MoveLaunchGPSLogger.cs" />
+    <Compile Include="MoveLaunch\MoveLaunchMassModifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VesselMove.cs" />
     <Compile Include="VesselSpawn.cs" />
@@ -95,46 +98,8 @@
     <None Include="Distribution\GameData\VesselMover\VesselMover.version" />
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>@echo $(Targetname)
-SET ModName=VesselMover
-@echo ...
-
-rem this step strips the solutionName from the git path to give us the root folder for locating the LocalDev Folder
-rem the echo commands are commented.  used for testing of the desired path.
-set GIT_PATH=$(SolutionDir)
-rem @echo %25GIT_PATH%25
-set GIT_PATH=%25GIT_PATH:VesselMover\=%25
-rem @echo %25GIT_PATH%25
-
-@echo set lpath vars from LocalDev storage...
-set /p KSP_DIR=&lt;"%25GIT_PATH%25\_LocalDev\ksp_dir.txt"
-set /p PDB2MDB_EXE=&lt;"%25GIT_PATH%25\_LocalDev\pdb2mdb_exe.txt"
-set /p ZA_DIR=&lt;"%25GIT_PATH%25\_LocalDev\7za_dir.txt"
-set /p DIST_DIR=&lt;"%25GIT_PATH%25\_LocalDev\dist_dir.txt"
-
-@echo distributing $(Targetname) files...
-copy /Y "$(TargetPath)" "$(ProjectDir)Distribution\GameData\%25ModName%25\Plugins\"
-
-if $(ConfigurationName) == Debug (
-@echo building $(Targetname).dll.mdb file...
-cd "$(TargetDir)"
-call "%25PDB2MDB_EXE%25" $(Targetname).dll
-)
-
-@echo deleting previous build ...
-if exist "%25DIST_DIR%25\%25ModName%25*.zip" del "%25DIST_DIR%25\%25ModName%25*.zip"
-@echo packaging new build...
-call "%25ZA_DIR%25\7za.exe" a -tzip -r  "%25DIST_DIR%25\%25ModName%25.@(VersionNumber)_%25DATE:~4,2%25%25DATE:~7,2%25%25DATE:~10,4%25.zip" "$(ProjectDir)Distribution\*.*"
-
-@echo Deploy $(Targetname) Distribution files to test env:  %25KSP_DIR%25\GameData...
-xcopy /E /Y "$(ProjectDir)Distribution\GameData" "%25KSP_DIR%25\GameData"
-
-if $(ConfigurationName) == Debug (
-copy /Y "$(TargetDir)$(Targetname).pdb" "%25KSP_DIR%25\GameData\%25ModName%25\Plugins\"
-copy /Y "$(TargetDir)$(Targetname).dll.mdb" "%25KSP_DIR%25\GameData\%25ModName%25\Plugins\"
-)
-
-@echo Build/deploy complete!</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
